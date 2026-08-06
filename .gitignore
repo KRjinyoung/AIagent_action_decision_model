@@ -1,0 +1,6 @@
+*.safetensors
+*.joblib
+*.bin
+*.h5
+*.pt
+*.pth

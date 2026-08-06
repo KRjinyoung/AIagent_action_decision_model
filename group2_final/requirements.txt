@@ -1,0 +1,6 @@
+# G2 expert (LM 없음, 트리+선형 스태킹). 채점 서버 env에 맞춰 고정.
+numpy==1.26.4
+pandas==2.0.3
+scikit-learn==1.8.0
+scipy>=1.11
+joblib==1.5.3
