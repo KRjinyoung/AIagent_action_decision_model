@@ -1,0 +1,23 @@
+group1 : 탐색 / 조회 : 파일이나 디렉토리를 읽고 찾기만 함. 가장 수동적이고 안전한 단계
+read_file : 파일 내용을 읽음
+grep_search : 파일 안에서 특정 문자열 / 패턴을 검색함
+glob_pattern : 파일 이름이나 경로 패턴으로 파일을 찾음
+list_directory : 폴더 안의 파일 / 하위 폴더 목록을 확인함
+
+group2 : 판단 / 확장 : 계획을 세우거나 사용자에게 묻거나 외부 정보를 가져옴
+plan_task : 바로 실행하지 않고 작업 계획을 세움
+ask_user : 사용자에게 추가 질문을 함
+web_search : 웹에서 정보를 검색함
+
+group3 : 실행 / 검증 : 코드를 실행하거나 테스트, 린트, 타입체크로 확인함
+run_bash : 터미널에서 명령어 실행
+run_tests : 테스트 실행
+lint_or_typecheck : 린트나 타입 검사 실행
+
+group4 : 수정 / 생성 :  실제 파일 내용을 바꾸거나 새로 작성함
+write_file : 새 파일을 만들거나 파일 내용을 전체적으로 작성
+edit_file : 기존 파일의 일부를 수정
+apply_patch : 코드 변경사항을 패치 / diff 형태로 적용
+
+group5
+repond_only

@@ -1,0 +1,23 @@
+{
+  "name": "group4_final_a5_w0p5_e10_warmup10_fp16",
+  "base_model": "klue/roberta-base",
+  "labels": [
+    "edit_file",
+    "write_file",
+    "apply_patch"
+  ],
+  "feature_template": "a5",
+  "epochs": 10,
+  "class_weight_power": 0.5,
+  "warmup_ratio": 0.1,
+  "max_length": 480,
+  "saved_dtype": "float16",
+  "source_output_dir": "output/group4_final_a5_w0p5_e10_warmup10_fp16/full/model_group4",
+  "validation": {
+    "split": "5-fold group CV",
+    "mean_macro_f1": 0.9817648492671671,
+    "mean_macro_f1_bias_tuned": 0.9819880785724454,
+    "worst_fold_macro_f1": 0.9778901461690902,
+    "mean_apply_patch_f1": 0.9711042662894237
+  }
+}
