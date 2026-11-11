@@ -11,7 +11,17 @@ Given a point in a conversation between a user and an AI coding agent, the model
 | Official baseline | 0.436 |
 | **Ours (router + group-specific experts)** | **0.789** |
 
-All inference runs under strict competition limits: a single NVIDIA T4 GPU, a 10-minute time budget, and no internet access.
+All models were trained on an **NVIDIA H100** GPU. Inference runs under strict competition limits: a single NVIDIA T4 GPU, a 10-minute time budget, and no internet access.
+
+## My Contribution
+
+This was a team project. My parts were:
+
+- **Router (overall two-stage architecture)**: designed the router + group-specific expert structure, the group taxonomy, and the router model (word/char TF-IDF + metadata features, soft-voting ensemble of calibrated LinearSVC and Logistic Regression). See `router_final/`.
+- **Group1 (Explore / Retrieve), in part**: contributed to the design of the group1 expert.
+- **Group3 (Execute / Verify)**: designed the full group3 expert: the V4 structured ensemble (LightGBM + CatBoost + XGBoost with separate history / current-prompt branches and an `au`-specific branch), the Context Recovery BERT input format, and the source-aware blending (BERT is blended only on `sim` records, 0.575 · V4 + 0.425 · BERT). See `group3_final/`.
+
+Group2 and Group4 were built by teammates and are included so the full pipeline is visible.
 
 ## Problem Definition
 
@@ -60,23 +70,29 @@ router_features.py   g1_predict g2_predict g3_predict g4(RoBERTa)  respond_only
 - **group4 (Edit / Create)**: fine-tuned `klue/roberta-base` with fp16 inference (`model/group4/`, `g4_features.py`)
 - **group5 (Respond only)**: no separate model; outputs `respond_only` when the router assigns this group
 
-Each `group{1..4}_final/` and `router_final/` directory holds the training code and original artifacts for that model, while `submit_final/` is the deployment bundle that actually goes into the zip.
+`submit_final/` is the deployment bundle that actually goes into the zip. The `router_final/` and `group{1..4}_final/` directories hold each model's standalone code:
+
+| Directory | Contents in this repository |
+| --- | --- |
+| `router_final/` | training (`train.py`), inference, features, trained `router_model.pkl` |
+| `group1_final/` | inference and features only |
+| `group2_final/` | training + inference (`predict.py train / predict`), trained `model.pkl` |
+| `group3_final/` | inference and features only |
+| `group4_final/` | training + inference (`predict.py`), model info |
+
+Large neural-network weights (`*.safetensors`, `*.bin`, `*.pt`, `*.joblib`) are excluded by `.gitignore`, so the Group1, Group3 and Group4 artifacts under `submit_final/model/` are not included in this repository.
 
 ## Repository Structure
 
 ```
-├── group1_final/              # group1 training code + model artifacts
-├── group2_final/              # group2 training code + model artifacts
-├── group3_final/              # group3 training code + model artifacts
-├── group4_final/              # group4 training code + model artifacts (with its own README)
-├── router_final/              # router training code + model artifacts
+├── group1_final/              # group1 inference + feature code
+├── group2_final/              # group2 training/inference code + model
+├── group3_final/              # group3 inference + feature code
+├── group4_final/              # group4 training/inference code (with its own README)
+├── router_final/              # router training/inference code + model
 ├── submit_final/              # source directory for the submission zip (includes script.py)
-├── submit/                    # initial baseline-based submission (for reference)
-├── submit.zip                 # latest submission
-├── submit_old.zip             # backup of the previous submission
 ├── 명세서.txt                  # data & problem specification (Korean)
-├── 규칙.txt                    # submission format & competition rules (Korean)
-└── 공식 추론 베이스라인.txt       # official baseline inference code from the organizers (Korean)
+└── 규칙.txt                    # submission format & competition rules (Korean)
 ```
 
 ## Building the Submission (`submit.zip`)
@@ -96,6 +112,11 @@ with zipfile.ZipFile("submit.zip", "w", zipfile.ZIP_DEFLATED) as zf:
             rel = os.path.relpath(path, "submit_final").replace(os.sep, "/")
             zf.write(path, rel)
 ```
+
+## Hardware
+
+- Training: NVIDIA H100
+- Evaluation / inference: NVIDIA T4 (16 GB), see below
 
 ## Evaluation Environment
 
