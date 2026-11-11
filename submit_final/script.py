@@ -79,10 +79,6 @@ def predict_group1(records):
 
 
 # --- group2: ask_user / plan_task / web_search ---------------------------------
-# structured V3 ensemble (RF/CatBoost + pair specialists) + distilled Ask/Plan
-# DistilBERT student + Plan-rescue rule. The full inference logic lives in
-# g2_predict.FinalG2Predictor (shipped verbatim from the group2 package).
-
 # g2_predict: HistGradientBoosting + TF-IDF LogisticRegression, stacked by a
 # session-GroupKFold-trained LogisticRegression (no language model).
 
