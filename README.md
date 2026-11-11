@@ -10,6 +10,9 @@ Given a point in a conversation between a user and an AI coding agent, the model
 | --- | --- |
 | Official baseline | 0.436 |
 | **Ours (router + group-specific experts)** | **0.789** |
+| Competition 1st place | 0.798 |
+
+The top of the public leaderboard was very tight: our score is within 0.009 of the winning submission.
 
 All models were trained on an **NVIDIA H100** GPU. Inference runs under strict competition limits: a single NVIDIA T4 GPU, a 10-minute time budget, and no internet access.
 
