@@ -26,6 +26,52 @@ This was a team project with one owner per component: I owned the router, and ea
 
 Group2 and Group4 were built by teammates and are included so the full pipeline is visible.
 
+## Development Process & Key Findings
+
+### 1. Removing session leakage from validation
+
+The starting notebook scored 0.507 macro-F1 with a random split. Samples from the same session (`sess_...-step_NN`) share history and context, so a random split leaks information between train and validation. After switching to **session-wise GroupKFold**, the same TF-IDF baseline dropped to **0.436**, which is the honest starting point. Every later experiment uses session-wise 5-fold GroupKFold.
+
+### 2. Feature ablation (5-fold session GroupKFold)
+
+| Step | CV macro-F1 | Δ |
+| --- | --- | --- |
+| TF-IDF on `current_prompt` (leak-free baseline) | 0.436 | |
+| + structural features (last action, CI status, git dirty, open files, turn index, ...) | 0.547 | +0.110 |
+| + history TF-IDF (last 4 turns) | 0.592 | +0.046 |
+| + `result_summary` of previous actions | 0.608 | +0.016 |
+
+Structural session state was the single largest gain: *what the agent just did and what state the workspace is in* matters more than the wording of the prompt alone.
+
+### 3. Error analysis → routing architecture
+
+A single 14-class transformer plateaued at about **0.72 macro-F1**. Analysing its errors showed that almost all of them were confusions *inside* a behavioural group, not across groups:
+
+| Confusion group | Share of all errors |
+| --- | --- |
+| `read_file` / `grep_search` / `glob_pattern` / `list_directory` | **64.1%** |
+| `run_bash` / `run_tests` / `lint_or_typecheck` | 15.4% |
+| `ask_user` / `plan_task` / `web_search` | 12.4% |
+| `edit_file` / `apply_patch` / `write_file` | 4.7% |
+
+The model already knew the coarse intent ("this is a file-search request") but could not separate the fine-grained action. This motivated the **router + group-specific experts** design: the coarse decision is easy (routing accuracy ≈ 99%), so each group gets an expert with features and models tuned to its own confusion pattern. This took the public score from about 0.71 to **0.789**.
+
+### 4. Group3 expert improvements
+
+| Class | Single 14-class model | Group3 expert |
+| --- | --- | --- |
+| `run_bash` | 0.794 | **0.836** |
+| `run_tests` | 0.731 | **0.842** |
+| `lint_or_typecheck` | 0.628 | **0.701** |
+
+### 5. Distribution shift between `au` and `sim` data
+
+Sample IDs reveal two sources: `sess_au_*` (likely real sessions) and `sess_sim_*` (simulated). A classifier separates them with **AUC ≈ 0.96**: `au` sessions are shorter and earlier (median turn 2 vs 4), mostly clean git state, and heavily skewed toward `read_file`, while `sim` prompts contain many politeness fillers. Because the two sources behave differently, the Group3 expert treats them separately: an `au`-specific branch in the structured model, and the text model (BERT) blended in only for `sim` records.
+
+### 6. Class-level logit calibration
+
+Macro-F1 weights every class equally, and many errors had the correct label as the second-ranked candidate. Adding a per-class logit bias tuned on validation (a class-level calibration of the decision boundary) improved the public score from 0.708 to 0.712 without retraining.
+
 ## Problem Definition
 
 - **Input**
