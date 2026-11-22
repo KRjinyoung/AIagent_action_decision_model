@@ -144,6 +144,31 @@ Large neural-network weights (`*.safetensors`, `*.bin`, `*.pt`, `*.joblib`) are 
 └── 규칙.txt                    # submission format & competition rules (Korean)
 ```
 
+## Running Inference
+
+`submit_final/script.py` reads `data/test.jsonl` (and `data/sample_submission.csv` if present) relative to its own directory and writes `output/submission.csv`. The neural-network weights under `submit_final/model/` are not included in this repository, so they must be placed there first.
+
+```bash
+cd submit_final
+pip install -r requirements.txt   # catboost, lightgbm, xgboost, safetensors
+python script.py
+```
+
+Expected layout:
+
+```
+submit_final/
+├── data/test.jsonl
+├── model/
+│   ├── router_model.pkl
+│   ├── group1/            # manifest.json + base / linear / gate / RoBERTa artifacts
+│   ├── group2_model.pkl
+│   ├── group3_model.pkl
+│   ├── group3_bert/
+│   └── group4/
+└── script.py
+```
+
 ## Building the Submission (`submit.zip`)
 
 `submit_final/` is the source of the zip. The final feature and model files from each `group{N}_final/` and `router_final/` are copied into `submit_final/`, and `submit_final/script.py` runs the router and all four group predictors end to end.
